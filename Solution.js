@@ -14,33 +14,33 @@ fs.readFile(filePath, 'utf8', (err, data) => {
 
   try {
     // Parse the JSON data
-    const jsonData = JSON.parse(data);
-    const hashmap = new Map();
+    const inputData = JSON.parse(data);
+    const map = new Map();
 
     // Processing revenue Data 
-    jsonData.revenueData.forEach(ele => {
+    inputData.revenueData.forEach(ele => {
         if(ele.startDate){
-            if(hashmap.has(ele.startDate))
-                hashmap.set(ele.startDate,hashmap.get(ele.startDate)+ele.amount);
+            if(map.has(ele.startDate))
+                map.set(ele.startDate,map.get(ele.startDate)+ele.amount);
             else 
-                hashmap.set(ele.startDate,ele.amount);
+                map.set(ele.startDate,ele.amount);
         }
     });
 
     // Processing expense Data 
-    jsonData.expenseData.forEach(ele => {
+    inputData.expenseData.forEach(ele => {
         if(ele.startDate){
-            if(hashmap.has(ele.startDate))
-                hashmap.set(ele.startDate,hashmap.get(ele.startDate)-ele.amount);
+            if(map.has(ele.startDate))
+                map.set(ele.startDate,map.get(ele.startDate)-ele.amount);
             else 
-                hashmap.set(ele.startDate,-ele.amount);
+                map.set(ele.startDate,-ele.amount);
             
-            if(hashmap.get(ele.startDate)==0)hashmap.set(ele.startDate,0);
+            if(map.get(ele.startDate)==0)map.set(ele.startDate,0);
         }
     });
 
 
-    let sortedKeys = Array.from(hashmap.keys()).sort();
+    let sortedKeys = Array.from(map.keys()).sort();
 
     let startTime=new Date(sortedKeys[0]);
     let endTime = new Date(sortedKeys[sortedKeys.length-1]);
@@ -49,17 +49,17 @@ fs.readFile(filePath, 'utf8', (err, data) => {
     // Filing missing entries
     while(startTime<endTime){
         const timeString = startTime.toISOString();
-        if(hashmap.has(timeString)==false)hashmap.set(timeString,0);
+        if(map.has(timeString)==false)map.set(timeString,0);
         startTime=new Date(startTime.getFullYear(), startTime.getMonth() + 1, startTime.getDate(), startTime.getHours(), startTime.getMinutes(), startTime.getSeconds());
     }
 
-    sortedKeys = Array.from(hashmap.keys()).sort();
+    sortedKeys = Array.from(map.keys()).sort();
 
     const balance = [];
 
     sortedKeys.forEach(key=>{
         const obj={};
-        obj[`amount`]=hashmap.get(key);
+        obj[`amount`]=map.get(key);
         obj["startDate"]=key;
         balance.push(obj);
     });
